@@ -136,7 +136,9 @@ class Shrimp {
 		ob_start();
 ?>
 
-Shrimp provides URL shortening functionality for an ExpressionEngine website, transforming long URLs like this:
+Shrimp is an ExpressionEngine plugin that provides URL shortening functionality. Shrimp is different from similar plugins in that it provides features like customizable link generation, access to the shortened URL for your own custom links, smart meta tags which hide themselves on non-entry pages, access to the relative URL (without the protocol or domain), and more, without any unnecessary database access.
+
+Shrimp transforms long URLs like this:
 
 	http://site.com/weblog/entries/some-article-title
 

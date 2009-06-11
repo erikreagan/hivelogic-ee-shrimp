@@ -57,7 +57,7 @@ class Shrimp {
 		global $DB, $TMPL, $FNS;
 
 		// pre-sanitize the entry_id as it may be used in a SQL query
-		$this->entry_id = $DB->escape_str($TMPL->fetch_param('entry_id'));
+		$this->entry_id = (int)$DB->escape_str($TMPL->fetch_param('entry_id'));
 
 		// fetch_param returns escaped characters, so we need to convert the slashes
 		// if no template group is specified, default to "u"
@@ -216,6 +216,9 @@ This will return just the path of the short URL, like this:
 
 * Fixed a superfluous slash in the <a href> tag.
 * Adding a check for existing entry_id. Will now display an error if not found.
+
+1.0.2.
+* Casting entry_id as an integer to prevent PHP errors
 
 <?php
 		$buffer = ob_get_contents();

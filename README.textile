@@ -82,9 +82,3 @@ This will return just the path of the short URL, like this:
 <pre>
 /u/123
 </pre>
-
-h2. Change Log
-
-1.0
-
-Initial release.

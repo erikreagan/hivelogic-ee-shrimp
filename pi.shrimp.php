@@ -107,12 +107,18 @@ class Shrimp {
 	// specified entry_id and template group (for use in the redirection template)
 	function redirect() {
 
-		global $DB, $FNS;
+		global $DB, $FNS, $OUT;
 
 		// get the url_title for the entry based on the specified (and pre-sanitized) entry_id
 		$query = $DB->query("SELECT url_title
 													FROM exp_weblog_titles
 													WHERE entry_id = ".$this->entry_id);
+
+		// display an error if the specified entry_id doesn't exist
+		if ($query->num_rows == 0)
+		{
+			$OUT->show_user_error('general', 'Invalid or nonexistent entry.');
+		}
 
 		// create the full-length URL using the specified template group and the retrieved url_title
 		$long_url = $FNS->create_url($this->template.'/'.$query->row['url_title'],false);
@@ -204,7 +210,12 @@ This will return just the path of the short URL, like this:
 
 1.0
 
-Initial release.
+* Initial release.
+
+1.0.1
+
+* Fixed a superfluous slash in the <a href> tag.
+* 
 
 <?php
 		$buffer = ob_get_contents();

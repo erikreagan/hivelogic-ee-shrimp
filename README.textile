@@ -34,6 +34,7 @@ Add the following line to the <head>...</head> block of your entry view template
 
 <pre>
 {exp:shrimp:meta_tag template="u" entry_id="{entry_id}"}
+</pre>
 
 Display the short link on your site, within an {exp:weblog:entries} tag block. Shrimp can generate a full @<a href>@ tag with a customizable title like this:
 

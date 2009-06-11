@@ -21,7 +21,7 @@
 
 $plugin_info = array(
 						'pi_name'					=>	'Shrimp',
-						'pi_version'			=>	'1.0.1',
+						'pi_version'			=>	'1.0',
 						'pi_author'				=>	'Dan Benjamin',
 						'pi_author_url'		=>	'http://hivelogic.com/projects/shrimp/',
 						'pi_description'	=>	'Shortens website URLs.',
@@ -215,7 +215,7 @@ This will return just the path of the short URL, like this:
 1.0.1
 
 * Fixed a superfluous slash in the <a href> tag.
-* 
+* Adding a check for existing entry_id. Will now display an error if not found.
 
 <?php
 		$buffer = ob_get_contents();

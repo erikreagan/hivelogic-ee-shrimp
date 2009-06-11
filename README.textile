@@ -1,0 +1,69 @@
+h1. Shrimp
+
+Shrimp provides URL shortening functionality for an ExpressionEngine website, transforming long URLs like this:
+
+pre. http://site.com/weblog/entries/some-article-title
+
+into shortened URLs like this:
+
+pre. http://site.com/u/123
+
+Shrimp then provides redirection from the shortened URL to the long URL through the use of a simple, one-line template.
+
+Additional functionality includes customizable link generation, access to the shortened URL for your own custom links, smart meta tags which hide themselves on non-entry pages, access to the relative URL (without the protocol or domain), and more, without any unnecessary database access.
+
+It is recommended that you remove the "index.php" from your URLs as described here (although Shrimp will work either way):
+
+pre. http://expressionengine.com/wiki/Remove_index.php_From_URLs
+
+h2. USAGE
+
+Integrating Shrimp into your ExpressionEngine website is a straight forward process.
+
+Create a new template group for the redirection. Give the group a short name, such as "u", in order to keep the URL as small as possible (Shrimp will actually assume the default template group name "u" if you don't specify one).
+
+Paste the following line into the index template in the new template group. You must replace "weblog/entries" in the example below with the name of your individual entry view template:
+
+pre. {exp:shrimp:redirect template="weblog/entries" entry_id="{segment_2}"}
+
+Add the following line to the <head>...</head> block of your entry view template, replacing the template value with the name of the template group you created in the first step (or omit it and Shrimp will use "u"):
+
+pre. {exp:shrimp:meta_tag template="u" entry_id="{entry_id}"}
+
+Display the short link on your site, within an {exp:weblog:entries} tag block. Shrimp can generate a full @<a href>@ tag with a customizable title like this:
+
+pre. {exp:shrimp:link title="Short URL" template="u" entry_id="{entry_id}"}
+
+This will generate an @<a href>@ tag like this:
+
+pre. <a href="http://site.com/u/123" title="Short URL">Short URL</a>
+
+You can specify anything you want for the link title, such as the entry's title:
+
+pre. {exp:shrimp:link title="{title}" template="u" entry_id="{entry_id}"}
+
+This will generate an @<a href>@ tag like this:
+
+pre. <a href="http://site.com/u/123" title="My Entry Title">My Entry Title</a>
+
+If you'd prefer to create your own custom links, you can access the shortened URL directly for use in your own links or for display using the "permalink" method like this:
+
+pre. {exp:shrimp:permalink template="u" entry_id="{entry_id}"}
+
+This will output just the shortened permalink without the @<a href>@ tag, like this:
+
+pre. http://site.com/u/123
+
+If you just want to access the shortened path without the protocol (@http://@) and site name, you can call the "relative_url" method, like this:
+
+pre. {exp:shrimp:relative_url template="u" entry_id="{entry_id}"}
+
+This will return just the path of the short URL, like this:
+
+pre. /u/123
+
+h2. Change Log
+
+1.0
+
+Initial release.

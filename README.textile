@@ -16,11 +16,7 @@ http://site.com/u/123
 
 Shrimp then provides redirection from the shortened URL to the long URL through the use of a simple, one-line template.
 
-It is recommended that you remove the "index.php" from your URLs as described here (although Shrimp will work either way):
-
-<pre>
-http://expressionengine.com/wiki/Remove_index.php_From_URLs
-</pre>
+It is recommended that you remove the "index.php" from your URLs "as described here":http://expressionengine.com/wiki/Remove_index.php_From_URLs (although Shrimp will work either way).
 
 h2. USAGE
 

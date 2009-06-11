@@ -21,7 +21,7 @@
 
 $plugin_info = array(
 						'pi_name'					=>	'Shrimp',
-						'pi_version'			=>	'1.0',
+						'pi_version'			=>	'1.0.1',
 						'pi_author'				=>	'Dan Benjamin',
 						'pi_author_url'		=>	'http://hivelogic.com/projects/shrimp/',
 						'pi_description'	=>	'Shortens website URLs.',

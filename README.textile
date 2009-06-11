@@ -1,6 +1,8 @@
 h1. Shrimp
 
-Shrimp provides URL shortening functionality for an ExpressionEngine website, transforming long URLs like this:
+Shrimp is an "ExpressionEngine":http://www.expressionengine.com/index.php?affiliate=hivelogic plugin that provides URL shortening functionality. Shrimp is different from similar plugins in that it provides features like customizable link generation, access to the shortened URL for your own custom links, smart meta tags which hide themselves on non-entry pages, access to the relative URL (without the protocol or domain), and more, without any unnecessary database access.
+
+Shrimp transforms long URLs like this:
 
 pre. http://site.com/weblog/entries/some-article-title
 
@@ -9,8 +11,6 @@ into shortened URLs like this:
 pre. http://site.com/u/123
 
 Shrimp then provides redirection from the shortened URL to the long URL through the use of a simple, one-line template.
-
-Shrimp is different from similar plugins in that it provides features like customizable link generation, access to the shortened URL for your own custom links, smart meta tags which hide themselves on non-entry pages, access to the relative URL (without the protocol or domain), and more, without any unnecessary database access.
 
 It is recommended that you remove the "index.php" from your URLs as described here (although Shrimp will work either way):
 

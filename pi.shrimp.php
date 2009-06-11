@@ -146,7 +146,7 @@ into shortened URLs like this:
 
 Shrimp then provides redirection from the shortened URL to the long URL through the use of a simple, one-line template.
 
-Additional functionality includes customizable link generation, access to the shortened URL for your own custom links, smart meta tags which hide themselves on non-entry pages, access to the relative URL (without the protocol or domain), and more, without any unnecessary database access.
+Shrimp is different from similar plugins in that it provides features like customizable link generation, access to the shortened URL for your own custom links, smart meta tags which hide themselves on non-entry pages, access to the relative URL (without the protocol or domain), and more, without any unnecessary database access.
 
 It is recommended that you remove the "index.php" from your URLs as described here (although Shrimp will work either way):
 

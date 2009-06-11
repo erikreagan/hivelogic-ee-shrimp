@@ -87,7 +87,7 @@ class Shrimp {
 	function link()
 	{
 		$title = ($this->title === '') ? $this->url : $this->title;
-		return '<a href="'.$this->url.'" title="'.$title.'" />'.$title.'</a>';
+		return '<a href="'.$this->url.'" title="'.$title.'">'.$title.'</a>';
 	}
 
 	// generate a meta tag suitable for placement within the <head> block of a webpage

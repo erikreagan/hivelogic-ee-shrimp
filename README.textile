@@ -30,7 +30,7 @@ Paste the following line into the index template in the new template group. You 
 {exp:shrimp:redirect template="weblog/entries" entry_id="{segment_2}"}
 </pre>
 
-Add the following line to the <head>...</head> block of your entry view template, replacing the template value with the name of the template group you created in the first step (or omit it and Shrimp will use "u"):
+Add the following line to the HEAD block of your entry view template, replacing the template value with the name of the template group you created in the first step (or omit it and Shrimp will use "u"):
 
 <pre>
 {exp:shrimp:meta_tag template="u" entry_id="{entry_id}"}

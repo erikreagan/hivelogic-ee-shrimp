@@ -72,7 +72,7 @@ class Shrimp {
 		}
 
 		// sanitize the title so it will be usable in an <a href> tag
-		$this->title = filter_var($TMPL->fetch_param('title'), FILTER_SANITIZE_SPECIAL_CHARS);
+		$this->title = htmlentities($TMPL->fetch_param('title'));
 
 		// create the shortened URL path without the protocol and domain
 		$this->path = ('/'.$this->template.'/'.$this->entry_id);

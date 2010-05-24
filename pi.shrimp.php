@@ -18,11 +18,21 @@
  =====================================================
 */
 
+/*
+ * Forked by @danott
+ * I wanted to have one template as the redirector for multiple weblogs.
+ * My solution was to use the EE preference for weblog search results
+ * path to build the longurl for the entry.
+ *
+ * Also changed some defaults along the way, and added some new ones
+ * for increased functionality for my needs.
+ */
+
 
 $plugin_info = array(
 						'pi_name'					=>	'Shrimp',
-						'pi_version'			=>	'1.0',
-						'pi_author'				=>	'Dan Benjamin',
+						'pi_version'			=>	'1.01*',
+						'pi_author'				=>	'Dan Benjamin, forked by @danott',
 						'pi_author_url'		=>	'http://hivelogic.com/projects/shrimp/',
 						'pi_description'	=>	'Shortens website URLs.',
 						'pi_usage'				=>	Shrimp::usage()
@@ -40,8 +50,14 @@ $plugin_info = array(
 
 class Shrimp {
 
+	// @danott fork - I use 's' as my default instead of u.
 	// set a default template group name in case one is not specified
-	var $default_template = "u";
+	var $default_redirect_template = "s"; 
+	
+	// @danott fork - a new default
+	// In some scenarious, I'd rather just go to the homepage rather than show an error.
+	var $do_forward_instead_of_error = TRUE;
+	
 
 	// initialize the variables
 	var $entry_id	=	'';
@@ -59,18 +75,15 @@ class Shrimp {
 		// pre-sanitize the entry_id as it may be used in a SQL query
 		$this->entry_id = (int)$DB->escape_str($TMPL->fetch_param('entry_id'));
 
-		// fetch_param returns escaped characters, so we need to convert the slashes
-		// if no template group is specified, default to "u"
-		$template = $TMPL->fetch_param('template');
-		if ($template === '')
-		{
-			$this->template = $this->default_template;
-		}
-		else
-		{
-			$this->template = str_replace(SLASH,'/',$template);
-		}
-
+		/* @danott fork
+		 * This was on multiple lines. Moved it down to one for simplicity sake.
+		 * Either grabs the template from the parameters cleans it up, or uses the default.
+		 *
+		 * fetch_param returns escaped characters, so we need to convert the slashes
+		 * if no template group is specified, use the default.
+		 */
+		$this->template = (!$TMPL->fetch_param('template')) ? $this->default_redirect_template : str_replace(SLASH,'/',$TMPL->fetch_param('template'));
+    
 		// sanitize the title so it will be usable in an <a href> tag
 		$this->title = htmlentities($TMPL->fetch_param('title'));
 
@@ -79,7 +92,6 @@ class Shrimp {
 
 		// create the shortened URL
 		$this->url = $FNS->create_url($this->path,false);
-
 	}
 
 	// generate a valid HTML link
@@ -107,21 +119,38 @@ class Shrimp {
 	// specified entry_id and template group (for use in the redirection template)
 	function redirect() {
 
-		global $DB, $FNS, $OUT;
+		global $DB, $FNS, $OUT, $TMPL;
 
-		// get the url_title for the entry based on the specified (and pre-sanitized) entry_id
-		$query = $DB->query("SELECT url_title
-													FROM exp_weblog_titles
-													WHERE entry_id = ".$this->entry_id);
+		/* @danott
+		 * To me, it seemed like a more elegant solution to not have to pass a template parameter
+		 * but rarther to use some preferences we already have stored. Using the entry's, weblog's
+		 * search result path, we can build the same url that a search page would take this entry to.
+		 * It may not work for all people, having not set that preference, but it works for me.
+		 * This way you can have one template 's' to provide the shortcut url for multiple weblogs.
+		 */
+		$query = $DB->query("SELECT exp_weblog_titles.url_title, exp_weblogs.search_results_url
+													FROM exp_weblog_titles JOIN exp_weblogs ON exp_weblog_titles.weblog_id = exp_weblogs.weblog_id
+													WHERE exp_weblog_titles.entry_id = ".$this->entry_id);
 
 		// display an error if the specified entry_id doesn't exist
 		if ($query->num_rows == 0)
 		{
-			$OUT->show_user_error('general', 'Invalid or nonexistent entry.');
+			
+			// @danott fork - do Dan Benjamin's original error message
+			if (!$this->do_forward_instead_of_error)
+			{
+				$OUT->show_user_error('general', 'Invalid or nonexistent entry.');
+				exit();
+			}
+			
+			// @danott fork - otherwise, just create a link to the homepage.
+			$long_url = $FNS->create_url('/',false);			
 		}
-
-		// create the full-length URL using the specified template group and the retrieved url_title
-		$long_url = $FNS->create_url($this->template.'/'.$query->row['url_title'],false);
+		else
+		{
+			// create the full-length URL using the specified template group and the retrieved url_title
+			$long_url = $query->row['search_results_url'].$query->row['url_title'];			
+		}
 
 		// issue a redirect to the full-length URL with a 301 status and exit
 		header("HTTP/1.1 301 Moved Permanently");

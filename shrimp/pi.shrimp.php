@@ -19,44 +19,56 @@
 */
 
 /*
- * Forked by @danott
- * I wanted to have one template as the redirector for multiple weblogs.
- * My solution was to use the EE preference for weblog search results
+ * Forked by @danott and later by @erikreagan
+ * 
+ * Dan wanted to have one template as the redirector for multiple weblogs.
+ * His solution was to use the EE preference for weblog search results
  * path to build the longurl for the entry.
  *
  * Also changed some defaults along the way, and added some new ones
- * for increased functionality for my needs.
+ * for increased functionality for his needs.
+ * 
+ * Erik ported the plugin to include compatibility for both EE 1.x and EE 2.x
  */
 
 
 $plugin_info = array(
-						'pi_name'					=>	'Shrimp',
-						'pi_version'			=>	'1.01*',
-						'pi_author'				=>	'Dan Benjamin, forked by @danott',
-						'pi_author_url'		=>	'http://hivelogic.com/projects/shrimp/',
-						'pi_description'	=>	'Shortens website URLs.',
-						'pi_usage'				=>	Shrimp::usage()
-					);
+	'pi_name'        =>	'Shrimp',
+	'pi_version'     =>	'1.5',
+	'pi_author'      =>	'Dan Benjamin',
+	'pi_author_url'  =>	'http://hivelogic.com/projects/shrimp/',
+	'pi_description' =>	'Shortens website URLs.',
+	'pi_usage'       =>	Shrimp::usage()
+
+);
 
 
 /**
  * Super Class
  *
- * @package 	Shrimp
+ * @package		Shrimp
  * @category	Plugin
  * @author		Dan Benjamin
- * @link 			http://hivelogic.com/projects/shrimp
+ * @link			http://hivelogic.com/projects/shrimp
  */
 
 class Shrimp {
 
-	// @danott fork - I use 's' as my default instead of u.
-	// set a default template group name in case one is not specified
-	var $default_redirect_template = "s"; 
+	var $default_redirect_template = "u"; 
 	
 	// @danott fork - a new default
 	// In some scenarious, I'd rather just go to the homepage rather than show an error.
 	var $do_forward_instead_of_error = TRUE;
+	
+	/* 
+	 * from @erikreagan
+	 * Initialize objects for EE1 and EE2 use in a single plugin
+	 * They're later referenced in the constructor based on app version number
+	 */
+	var $DB;
+	var $FNS;
+	var $OUT;
+	var $TMPL;
 	
 
 	// initialize the variables
@@ -64,16 +76,44 @@ class Shrimp {
 	var $template	=	'';
 	var $title 		=	'';
 	var $path 		=	'';
-	var $url 			=	'';
+	var $url 		=	'';
+	
+	/* 
+	 * from @erikreagan
+	 * This variable will be for our DB table nomenclature.
+	 * It's defined in our constructor
+	 */
+	var $nomenclature = '';
 
 	// retrieve the data and filter or reformat it
 	function Shrimp()
 	{
-
-		global $DB, $TMPL, $FNS;
+		
+		/* 
+		 * from @erikreagan
+		 * EE version check to properly reference our EE objects
+		 */
+		if (version_compare(APP_VER, '2', '<'))
+		{
+			// EE 1.x is in play
+			global $DB, $FNS, $OUT, $TMPL;
+			$this->DB   =& $DB;
+			$this->FNS  =& $FNS;
+			$this->OUT  =& $OUT;
+			$this->TMPL =& $TMPL;
+			$this->nomenclature = 'weblog';
+		} else {
+			// EE 2.x is in play
+			$this->EE	=& get_instance();
+			$this->DB   =& $this->EE->db;
+			$this->FNS  =& $this->EE->functions;
+			$this->OUT  =& $this->EE->output;
+			$this->TMPL =& $this->EE->TMPL;
+			$this->nomenclature = 'channel';
+		}
 
 		// pre-sanitize the entry_id as it may be used in a SQL query
-		$this->entry_id = (int)$DB->escape_str($TMPL->fetch_param('entry_id'));
+		$this->entry_id = (int)$this->DB->escape_str($this->TMPL->fetch_param('entry_id'));
 
 		/* @danott fork
 		 * This was on multiple lines. Moved it down to one for simplicity sake.
@@ -82,16 +122,17 @@ class Shrimp {
 		 * fetch_param returns escaped characters, so we need to convert the slashes
 		 * if no template group is specified, use the default.
 		 */
-		$this->template = (!$TMPL->fetch_param('template')) ? $this->default_redirect_template : str_replace(SLASH,'/',$TMPL->fetch_param('template'));
-    
+		$this->template = ( ! $this->TMPL->fetch_param('template')) ? $this->default_redirect_template : str_replace(SLASH,'/',$this->TMPL->fetch_param('template'));
+
 		// sanitize the title so it will be usable in an <a href> tag
-		$this->title = htmlentities($TMPL->fetch_param('title'));
+		$this->title = htmlentities($this->TMPL->fetch_param('title'));
 
 		// create the shortened URL path without the protocol and domain
 		$this->path = ('/'.$this->template.'/'.$this->entry_id);
 
 		// create the shortened URL
-		$this->url = $FNS->create_url($this->path,false);
+		$this->url = $this->FNS->create_url($this->path,false);
+
 	}
 
 	// generate a valid HTML link
@@ -119,8 +160,6 @@ class Shrimp {
 	// specified entry_id and template group (for use in the redirection template)
 	function redirect() {
 
-		global $DB, $FNS, $OUT, $TMPL;
-
 		/* @danott
 		 * To me, it seemed like a more elegant solution to not have to pass a template parameter
 		 * but rarther to use some preferences we already have stored. Using the entry's, weblog's
@@ -128,28 +167,47 @@ class Shrimp {
 		 * It may not work for all people, having not set that preference, but it works for me.
 		 * This way you can have one template 's' to provide the shortcut url for multiple weblogs.
 		 */
-		$query = $DB->query("SELECT exp_weblog_titles.url_title, exp_weblogs.search_results_url
-													FROM exp_weblog_titles JOIN exp_weblogs ON exp_weblog_titles.weblog_id = exp_weblogs.weblog_id
-													WHERE exp_weblog_titles.entry_id = ".$this->entry_id);
-
+		
+		/*
+		 * from @erikreagan
+		 * Query has been written to use "weblog" or "channel" based on EE version
+		 */
+		
+		$query = $this->DB->query("SELECT exp_".$this->nomenclature."_titles.url_title, exp_".$this->nomenclature."s.search_results_url
+						FROM exp_".$this->nomenclature."_titles
+						JOIN exp_".$this->nomenclature."s ON exp_".$this->nomenclature."_titles.".$this->nomenclature."_id = exp_".$this->nomenclature."s.".$this->nomenclature."_id
+						WHERE exp_".$this->nomenclature."_titles.entry_id = ".$this->entry_id);		
+		
 		// display an error if the specified entry_id doesn't exist
 		if ($query->num_rows == 0)
 		{
 			
 			// @danott fork - do Dan Benjamin's original error message
-			if (!$this->do_forward_instead_of_error)
+			if ( ! $this->do_forward_instead_of_error)
 			{
-				$OUT->show_user_error('general', 'Invalid or nonexistent entry.');
+				$this->OUT->show_user_error('general', 'Invalid or nonexistent entry.');
 				exit();
 			}
 			
 			// @danott fork - otherwise, just create a link to the homepage.
-			$long_url = $FNS->create_url('/',false);			
-		}
-		else
-		{
+			$long_url = $this->FNS->create_url('/',false);			
+		} else {
+			
+			/*
+			 * from @erikreagan
+			 * If we're in EE 2.x we need to reference the result_object
+			 * We do this so we can use the same object with our result regardless of the EE version in play
+			 */
+			$query->row = (version_compare(APP_VER, '2', '<')) ? $query->row : get_object_vars($query->result_object[0]) ;
+			
 			// create the full-length URL using the specified template group and the retrieved url_title
-			$long_url = $query->row['search_results_url'].$query->row['url_title'];			
+			// If the weblog has a search_results_url we use that, otherwise we use the template paramter passed to the plugin
+			// Using the longhand syntax for readability
+			if ($query->row['search_results_url'] != '') {
+				$long_url = $query->row['search_results_url'].$query->row['url_title'];
+			} else {
+				$long_url = $this->FNS->create_url($this->template.'/'.$query->row['url_title'],false);
+			}
 		}
 
 		// issue a redirect to the full-length URL with a 301 status and exit
@@ -247,7 +305,12 @@ This will return just the path of the short URL, like this:
 * Adding a check for existing entry_id. Will now display an error if not found.
 
 1.0.2.
+
 * Casting entry_id as an integer to prevent PHP errors
+
+1.5
+
+* Updated by Erik Reagan (@erikreagan) to support both ExpressionEngine 1.x and 2.x
 
 <?php
 		$buffer = ob_get_contents();

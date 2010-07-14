@@ -18,6 +18,19 @@ Shrimp then provides redirection from the shortened URL to the long URL through 
 
 It is recommended that you remove the "index.php" from your URLs "as described here":http://expressionengine.com/wiki/Remove_index.php_From_URLs (although Shrimp will work either way).
 
+h2. Compatibility
+
+As of version 1.5 Shrimp is compatible with both ExpressionEngine 1.x and 2.x branches
+
+h2. Installation
+
+*For EE 1.x*
+* Copy the <code>shrimp/pi.shrimp.php</code> file to your <code>system/plugins</code> directory
+
+*For EE 2.x*
+* Copy the <code>shrimp</code> directory to your <code>system/expressionengine/third_party</code> directory
+
+
 h2. USAGE
 
 Integrating Shrimp into your ExpressionEngine website is a straight forward process.
